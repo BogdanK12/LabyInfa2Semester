@@ -1,3 +1,39 @@
+# Qt Creator
+*.pro.user
+*.pro.user.*.backup
+*.qbs.user
+*.creator.user
+*.autosave
+*.layout
+*.session
+
+# Build directories
+build-*/
+*.o
+*.obj
+*.so
+*.a
+*.lib
+*.dll
+*.exe
+
+# CMake generated files (if using CMake)
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+build/
+
+# Qt moc, ui, rcc generated files
+moc_*.cpp
+ui_*.h
+qrc_*.cpp
+
+# Backup and temporary files
+*~
+*.swp
+*.tmp
+
 # Prerequisites
 *.d
 
