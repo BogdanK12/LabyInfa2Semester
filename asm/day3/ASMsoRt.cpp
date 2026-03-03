@@ -70,15 +70,15 @@ int main()
     "xor %%rax, %%rax\n\t"
     "xor %%rbx, %%rbx\n\t"
     "xor %%rcx, %%rcx\n\t"
-    "xor %%rdx, %%rdx\n\t"
 
     "movq %1, %%rdi\n\t"
     "dec %%rdi\n\t"
     "movq %%rdi, %%r8\n\t"
 
     "external_loop:\n\t"
+    "xor %%rdx, %%rdx\n\t"
     "cmp %%rdi, %%rcx\n\t"
-    "jae end\n\t"
+    "ja end\n\t"
 
       "inner_loop:\n\t"
       "cmp %%r8, %%rdx\n\t"
@@ -103,7 +103,6 @@ int main()
     "external_next:\n\t"
     "inc %%rcx\n\t"
     "dec %%r8\n\t"
-    "xor %%rdx, %%rdx\n\t"
     "jmp external_loop\n\t"
 
     "end:\n\t"
