@@ -1,6 +1,7 @@
 #include <cstddef>
 #include <iomanip>
 #include <iostream>
+#include <random>
 
 template <typename T>
 void print(const T* arr, size_t size)
@@ -8,9 +9,8 @@ void print(const T* arr, size_t size)
   std::cout << "| ";
   for(size_t i{}; i < size; i++)
   {
-    std::cout << std::setw(3) << std::setfill('0') <<  arr[i] << " | ";
+    std::cout << std::setw(3) << arr[i] << " | ";
   }
-  // std::cout << '\n';
 }
 
 template <typename T, size_t size1, size_t size2>
@@ -30,6 +30,9 @@ int main()
   const size_t size5{size2 + 1};
   size_t size3 = size1;
   size_t size4 = size2;
+  std::random_device rd;
+  std::mt19937 gg(rd());
+  std::uniform_int_distribution<int> gen(-2, 2);
   int matrix[size1][size2];
   for(size_t i{}; i < size1; i++)
   {
@@ -40,7 +43,7 @@ int main()
         matrix[i][j] = 0;
       } else
       {
-        matrix[i][j] = rand() % 3;
+        matrix[i][j] = gen(gg);
       }
     }
   }
@@ -82,51 +85,9 @@ int main()
       "movl $0, (%%rsi, %%rdi, 4)\n\t"
       "inc %%rdi\n\t"
       "jmp fill_zeros\n\t"
-      // "jnz columns_next\n\t"
-
-      // "inc %%rdi\n\t"
-
-      
-      // "push %%rcx\n\t"
-      // "movq %%rdx, %%rcx\n\t"
-
-        // "do_stuff:\n\t"
-        // "cmp %1, %%rcx\n\t"
-        // "jge pre_next\n\t"
-        // "movslq 4(%%rsi, %%rcx, 4), %%rax\n\t"
-        // "movl %%eax, (%%rsi, %%rcx, 4)\n\t"
-        // "inc %%rcx\n\t"
-        // "jmp do_stuff\n\t"
-      
-      // "pre_next:\n\t"
-      // "pop %%rcx\n\t"
-      
-      // "columns_next:\n\t"
-      // "inc %%rdx\n\t"
-      // "jmp columns\n\t"
-
-    // "next_row:\n\t"
-
-    // "push %%rdx\n\t"
-    // "movq %1, %%rdx\n\t"
-    // "fill_zeros:\n\t"
-    //   "test %%rdi, %%rdi\n\t"
-    //   "jz cont\n\t"
-    //   "movl $0, (%%rsi, %%rdx, 4)\n\t"
-    //   "dec %%rdx\n\t"
-    //   "dec %%rdi\n\t"
-    //   "jmp fill_zeros\n\t"
-    
     "next_row:\n\t"
-    // "pop %%rdx\n\t"
     "inc %%rcx\n\t"
-    // "movq %1, %%rax\n\t"
-    // "inc %%rax\n\t"
-    // "mul %%rcx\n\t"
-    // "shl $2, %%rax\n\t"
-    // "addq %%rax, %%rsi\n\t"
     "lea (%%rsi, %%rdx, 4), %%rsi\n\t"
-    // "addq $4, %%rsi\n\t"
     "xor %%rdx, %%rdx\n\t"
     "xor %%rdi, %%rdi\n\t"
     "jmp rows\n\t"
@@ -185,20 +146,15 @@ int main()
   asm volatile
   (
     "movq %1, %%rdi\n\t"
-    // "movq %2, %%rax\n\t"
-    // "shl $2, %%rax\n\t"
-    // "push %%rax\n\t"
-    "movq %2, %%rax\n\t"
-    "dec %%rax\n\t"
-    "movl (%0, %%rax, 4), %%ebx\n\t"
+    // "movl -4(%0, %2, 4), %%ebx\n\t"
     "xor %%rcx, %%rcx\n\t"
     "xor %%rdx, %%rdx\n\t"
 
     "sort_cycle:\n\t"
-      "test %%rdi, %%rdi\n\t"
-      "jz end3\n\t"
+      "cmp $0, %%rdi\n\t"
+      "jle end3\n\t"
       "lea (%0), %%rsi\n\t"
-      "movl (%0, %%rax, 4), %%ebx\n\t"
+      "movl -4(%0, %2, 4), %%ebx\n\t"
 
 
       "go_through_zeros:\n\t"
@@ -210,15 +166,7 @@ int main()
 
         "next_zero:\n\t"
         "inc %%rcx\n\t"
-        // "pop %%rax\n\t"
-        // "push %%rax\n\t"
-        // "push %%rdx\n\t"
-        // "movq %%rcx, %%rax\n\t"
-        // "inc %%rax\n\t"
-        // "imul %2, %%rax\n\t"
-        // "pop %%rdx\n\t"
-        // "dec %%rax\n\t"
-        "lea (%0, %2, 4), %%rsi\n\t"
+        "lea (%%rsi, %2, 4), %%rsi\n\t"
         "jmp go_through_zeros\n\t"
         
         "swap_index:\n\t"
@@ -227,21 +175,13 @@ int main()
         "jmp next_zero\n\t"
 
       "swap_rows:\n\t"
-        // "pop %%rax\n\t"
-        // "push %%rax\n\t"
-        "push %%rdx\n\t"
         "movq %%rdx, %%rax\n\t"
-        // "inc %%rax\n\t"
         "imul %2, %%rax\n\t"
-        "pop %%rdx\n\t"
-        // "dec %%rax\n\t"
-         // "movq %%rdx, %%rax\n\t"
         "lea (%0, %%rax, 4), %%rsi\n\t"
 
         "movq %%rdi, %%rax\n\t"
-        // "inc %%rax\n\t"
+        "dec %%rax\n\t"
         "imul %2, %%rax\n\t"
-        // "dec %%rax\n\t"
         "lea (%0, %%rax, 4), %%rbx\n\t"
         "xor %%rcx, %%rcx\n\t"
 
@@ -257,8 +197,8 @@ int main()
         
     "sort_next:\n\t"
     "dec %%rdi\n\t"
-    "xor %%rdx, %%rdx\n\t"
     "xor %%rcx, %%rcx\n\t"
+    "xor %%rdx, %%rdx\n\t"
     "jmp sort_cycle\n\t"
     
     "end3:\n\t"
@@ -266,6 +206,7 @@ int main()
     : "r"(tempMatrix), "r"(size1), "r"(size5)
     : "rax", "rbx", "rcx", "rdx", "rsi", "rdi", "cc", "memory"
   );
+  std::cout << "\nAfter sorting:\n";
   printMatrix<int, size1, size5>(tempMatrix);
   return 0;
 }
