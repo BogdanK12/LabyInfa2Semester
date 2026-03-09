@@ -111,7 +111,7 @@ int main()
     "xor %%rdx, %%rdx\n\t"
     "jmp rows\n\t"
 
-    "end:\n\t"
+    "end1:\n\t"
     : "+r"(size3), "+r"(size4)
     : "r"(matrix)
     : "rax", "rbx", "rcx", "rdx", "rsi", "rdi", "cc", "memory"
@@ -119,5 +119,46 @@ int main()
   std::cout << "\nAfter shifting 0 to end: \n";
   printMatrix<int, size1, size2>(matrix);
   int tempMatrix[size1][size2];
+  asm volatile
+  (
+    "lea (%0), %%rsi\n\t"
+    "lea (%1), %%rdi\n\t"
+    "xor %%rbx, %%rbx\n\t"
+    "xor %%rcx, %%rcx\n\t"
+    "xor %%rdx, %%rdx\n\t"
+
+    "copying_row:\n\t"
+      "cmp %2, %%rcx\n\t"
+      "jge end2\n\t"
+
+      "copying_column:\n\t"
+        "cmp %3, %%rdx\n\t"
+        "jge next_row:\n\t"
+
+        "movsl (%%rsi, %%rdx, 4), %%eax\n\t"
+        "movsl %%eax, (%%rdi, %%rdx, 4)\n\t"
+        "test %%eax, %%eax\n\t"
+        "jnz next_column\n\t"
+        "inc %%ebx\n\t"
+        
+      "next_column:\n\t"
+        "inc %%rdx\n\t"
+        "jmp copying_column\n\t"
+
+    "next_row:\n\t"
+      "lea (%%rsi, %%rdx, 4), %%rsi\n\t"
+      "movl %%ebx, (%%rdi, %%rdx, 4)\n\t"
+      "inc %%rdx\n\t"
+      "lea (%%rsi, %%rdx, 4), %%rdi\n\t"
+      "xor %%rbx, %%rbx\n\t"
+      "xor %%rdx, %%rdx\n\t"
+      "jmp copying_row\n\t"
+
+    "end2:\n\t"
+    : 
+    : "r"(matrix), "r"(tempMatrix), "r"(size1), "r"(size2)
+    : "rax", "rbx", "rcx", "rdx", "rsi", "rdi", "cc", "memory"
+  );
+  printMatrix<int, size1, size2>(tempMatrix);
   return 0;
 }
