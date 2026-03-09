@@ -61,14 +61,29 @@ int main()
 
       "columns:\n\t"
       "cmp %1, %%rdx\n\t"
-      "jg rows_next\n\t"
+      "jg fill_zeros\n\t"
 
-      "movslq (%%rsi, %%rdx, 4), %%rax\n\t"
+      "movl (%%rsi, %%rdx, 4), %%eax\n\t"
 
-      "test %%rax, %%rax\n\t"
+      "test %%eax, %%eax\n\t"
+      "jz skip_filling\n\t"
+
+      "movl %%eax, (%%rsi, %%rdi, 4)\n\t"
+      "inc %%rdi\n\t"
+
+      "skip_filling:\n\t"
+      "inc %%rdx\n\t"
+      "jmp columns\n\t"
+
+      "fill_zeros:\n\t"
+      "cmp %1, %%rdi\n\t"
+      "jg next_row\n\t"
+      "movl $0, (%%rsi, %%rdi, 4)\n\t"
+      "inc %%rdi\n\t"
+      "jmp fill_zeros\n\t"
       // "jnz columns_next\n\t"
 
-      "inc %%rdi\n\t"
+      // "inc %%rdi\n\t"
 
       
       // "push %%rcx\n\t"
@@ -85,24 +100,24 @@ int main()
       // "pre_next:\n\t"
       // "pop %%rcx\n\t"
       
-      "columns_next:\n\t"
-      "inc %%rdx\n\t"
-      "jmp columns\n\t"
+      // "columns_next:\n\t"
+      // "inc %%rdx\n\t"
+      // "jmp columns\n\t"
 
-    "rows_next:\n\t"
+    // "next_row:\n\t"
 
-    "push %%rdx\n\t"
-    "movq %1, %%rdx\n\t"
-    "fill_zeros:\n\t"
-      "test %%rdi, %%rdi\n\t"
-      "jz cont\n\t"
-      "movl $0, (%%rsi, %%rdx, 4)\n\t"
-      "dec %%rdx\n\t"
-      "dec %%rdi\n\t"
-      "jmp fill_zeros\n\t"
+    // "push %%rdx\n\t"
+    // "movq %1, %%rdx\n\t"
+    // "fill_zeros:\n\t"
+    //   "test %%rdi, %%rdi\n\t"
+    //   "jz cont\n\t"
+    //   "movl $0, (%%rsi, %%rdx, 4)\n\t"
+    //   "dec %%rdx\n\t"
+    //   "dec %%rdi\n\t"
+    //   "jmp fill_zeros\n\t"
     
-    "cont:\n\t"
-    "pop %%rdx\n\t"
+    "next_row:\n\t"
+    // "pop %%rdx\n\t"
     "inc %%rcx\n\t"
     // "movq %1, %%rax\n\t"
     // "inc %%rax\n\t"
@@ -137,7 +152,7 @@ int main()
 
       "copying_column:\n\t"
         "cmp %3, %%rdx\n\t"
-        "jge next_row\n\t"
+        "jge next_row2\n\t"
 
         "movl (%%rsi, %%rdx, 4), %%eax\n\t"
         "movl %%eax, (%%rdi, %%rdx, 4)\n\t"
@@ -149,7 +164,7 @@ int main()
         "inc %%rdx\n\t"
         "jmp copying_column\n\t"
 
-    "next_row:\n\t"
+    "next_row2:\n\t"
       "lea (%%rsi, %%rdx, 4), %%rsi\n\t"
       "movl %%ebx, (%%rdi, %%rdx, 4)\n\t"
       "inc %%rdx\n\t"
