@@ -26,6 +26,7 @@ int main()
 {
   const size_t size1{4};
   const size_t size2{5};
+  const size_t size5{size2 + 1};
   size_t size3 = size1;
   size_t size4 = size2;
   int matrix[size1][size2];
@@ -35,7 +36,7 @@ int main()
     {
       if(i == j)
       {
-        matrix[i][j] = 1;
+        matrix[i][j] = 0;
       } else
       {
         matrix[i][j] = i*j;
@@ -56,7 +57,7 @@ int main()
 
     "rows:\n\t"
     "cmp %0, %%rcx\n\t"
-    "jg end\n\t"
+    "jg end1\n\t"
 
       "columns:\n\t"
       "cmp %1, %%rdx\n\t"
@@ -65,22 +66,24 @@ int main()
       "movslq (%%rsi, %%rdx, 4), %%rax\n\t"
 
       "test %%rax, %%rax\n\t"
-      "jnz columns_next\n\t"
+      // "jnz columns_next\n\t"
 
       "inc %%rdi\n\t"
-      "push %%rcx\n\t"
-      "movq %%rdx, %%rcx\n\t"
 
-        "do_stuff:\n\t"
-        "cmp %1, %%rcx\n\t"
-        "jge pre_next\n\t"
-        "movslq 4(%%rsi, %%rcx, 4), %%rax\n\t"
-        "movl %%eax, (%%rsi, %%rcx, 4)\n\t"
-        "inc %%rcx\n\t"
-        "jmp do_stuff\n\t"
       
-      "pre_next:\n\t"
-      "pop %%rcx\n\t"
+      // "push %%rcx\n\t"
+      // "movq %%rdx, %%rcx\n\t"
+
+        // "do_stuff:\n\t"
+        // "cmp %1, %%rcx\n\t"
+        // "jge pre_next\n\t"
+        // "movslq 4(%%rsi, %%rcx, 4), %%rax\n\t"
+        // "movl %%eax, (%%rsi, %%rcx, 4)\n\t"
+        // "inc %%rcx\n\t"
+        // "jmp do_stuff\n\t"
+      
+      // "pre_next:\n\t"
+      // "pop %%rcx\n\t"
       
       "columns_next:\n\t"
       "inc %%rdx\n\t"
@@ -89,14 +92,14 @@ int main()
     "rows_next:\n\t"
 
     "push %%rdx\n\t"
-    "fill_zeros:\n\t"
     "movq %1, %%rdx\n\t"
-    "test %%rdi, %%rdi\n\t"
-    "jz cont\n\t"
-    "movl $0, (%%rsi, %%rdx, 4)\n\t"
-    "dec %%rdx\n\t"
-    "dec %%rdi\n\t"
-    "jmp fill_zeros\n\t"
+    "fill_zeros:\n\t"
+      "test %%rdi, %%rdi\n\t"
+      "jz cont\n\t"
+      "movl $0, (%%rsi, %%rdx, 4)\n\t"
+      "dec %%rdx\n\t"
+      "dec %%rdi\n\t"
+      "jmp fill_zeros\n\t"
     
     "cont:\n\t"
     "pop %%rdx\n\t"
@@ -109,6 +112,7 @@ int main()
     "lea (%%rsi, %%rdx, 4), %%rsi\n\t"
     // "addq $4, %%rsi\n\t"
     "xor %%rdx, %%rdx\n\t"
+    "xor %%rdi, %%rdi\n\t"
     "jmp rows\n\t"
 
     "end1:\n\t"
@@ -118,7 +122,7 @@ int main()
   );
   std::cout << "\nAfter shifting 0 to end: \n";
   printMatrix<int, size1, size2>(matrix);
-  int tempMatrix[size1][size2];
+  int tempMatrix[size1][size2 + 1];
   asm volatile
   (
     "lea (%0), %%rsi\n\t"
@@ -133,10 +137,10 @@ int main()
 
       "copying_column:\n\t"
         "cmp %3, %%rdx\n\t"
-        "jge next_row:\n\t"
+        "jge next_row\n\t"
 
-        "movsl (%%rsi, %%rdx, 4), %%eax\n\t"
-        "movsl %%eax, (%%rdi, %%rdx, 4)\n\t"
+        "movl (%%rsi, %%rdx, 4), %%eax\n\t"
+        "movl %%eax, (%%rdi, %%rdx, 4)\n\t"
         "test %%eax, %%eax\n\t"
         "jnz next_column\n\t"
         "inc %%ebx\n\t"
@@ -149,7 +153,8 @@ int main()
       "lea (%%rsi, %%rdx, 4), %%rsi\n\t"
       "movl %%ebx, (%%rdi, %%rdx, 4)\n\t"
       "inc %%rdx\n\t"
-      "lea (%%rsi, %%rdx, 4), %%rdi\n\t"
+      "inc %%rcx\n\t"
+      "lea (%%rdi, %%rdx, 4), %%rdi\n\t"
       "xor %%rbx, %%rbx\n\t"
       "xor %%rdx, %%rdx\n\t"
       "jmp copying_row\n\t"
@@ -159,6 +164,7 @@ int main()
     : "r"(matrix), "r"(tempMatrix), "r"(size1), "r"(size2)
     : "rax", "rbx", "rcx", "rdx", "rsi", "rdi", "cc", "memory"
   );
-  printMatrix<int, size1, size2>(tempMatrix);
+  std::cout << "\nAfter adding column for zeros:\n";
+  printMatrix<int, size1, size5>(tempMatrix);
   return 0;
 }
