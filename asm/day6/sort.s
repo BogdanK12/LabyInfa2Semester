@@ -23,9 +23,9 @@ inner_loop:
 
 	cmp %r8, %rdx
 	jge external_next
-	movw (%rdi, %rdx, 2), %bx
-	movw 2(%rdi, %rdx, 2), %ax
-	cmp %bx, %ax
+	movl (%rdi, %rdx, 4), %ebx
+	movl 4(%rdi, %rdx, 4), %eax
+	cmp %ebx, %eax
 	jl greater
 
 inner_next:
@@ -35,8 +35,8 @@ inner_next:
 
 greater:
 
-	movw %ax, (%rdi, %rdx, 2)
-	movw %bx, 2(%rdi, %rdx, 2)
+	movl %eax, (%rdi, %rdx, 4)
+	movl %ebx, 4(%rdi, %rdx, 4)
 	jmp inner_next
 
 external_next:
@@ -44,6 +44,9 @@ external_next:
 	inc %rcx
 	dec %r8
 	jmp external_loop
+
+
+
 end:
 
         pop %rbx
