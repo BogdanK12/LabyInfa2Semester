@@ -21,7 +21,7 @@ sinius:
         movsd .LC_sign(%rip), %xmm1
         xorps %xmm1, %xmm2
         movsd .LC_limit(%rip), %xmm4
-                
+
 
 cycle:
 
@@ -43,7 +43,6 @@ cycle:
         jb end
         addsd %xmm7, %xmm3
         jmp cycle
-
 
 end:
 
